@@ -75,6 +75,20 @@ npm run deploy:prepare
 
 This script validates the deployment settings and generates the Netlify host files (for example `netlify.toml`).
 
+The generated `netlify.toml` pins the static build settings used by Netlify:
+
+```toml
+[build]
+command = "npm ci && npm run build"
+publish = "dist"
+
+[build.environment]
+NODE_VERSION = "22"
+NODE_OPTIONS = "--max-old-space-size=4096"
+```
+
+`NODE_OPTIONS` raises the Node heap for Vite's production build; the `npm run build` script also sets the same heap limit so local and hosted builds behave consistently. The Babylon Inspector is loaded only in Vite development, so production builds should not bundle the Inspector's React/Fluent UI dependency graph.
+
 ### Step 3: Build the static site
 
 Run:
@@ -91,6 +105,7 @@ In your Netlify site settings, add the environment variables:
 
 - `VITE_MULTIPLAYER_HOST` — optional, set only when using a custom multiplayer server
 - `NODE_ENV=production` — optional, but recommended for production builds
+- `NODE_VERSION=22` and `NODE_OPTIONS=--max-old-space-size=4096` are already provided by `netlify.toml`; only override them in the Netlify UI if you intentionally want different build runtime settings.
 
 If you want to disable multiplayer entirely, do not set `VITE_MULTIPLAYER_HOST`; instead use `CONFIG.MULTIPLAYER.ENABLED = false`.
 
